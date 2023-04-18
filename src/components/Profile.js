@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import firebase from '../firebase';
+import { auth } from '../firebase';
+
 
 const Profile = () => {
   const [user, setUser] = useState(null);

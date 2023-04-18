@@ -1,21 +1,21 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Register from './components/Register';
 import Login from './components/Login';
-import Profile from './components/profile';
+import Profile from './components/Profile';
 import Search from './components/Search';
 import ChangePassword from './components/ChangePassword';
 
 const App = () => {
   return (
     <Router>
-      <Switch>
-        <Route path="/register" component={Register} />
-        <Route path="/login" component={Login} />
-        <Route path="/profile" component={Profile} />
-        <Route path="/search" component={Search} />
-        <Route path="/change-password" component={ChangePassword} />
-      </Switch>
+      <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/change-password" element={<ChangePassword />} />
+      </Routes>
     </Router>
   );
 };
