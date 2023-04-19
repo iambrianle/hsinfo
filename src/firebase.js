@@ -1,3 +1,4 @@
+
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
@@ -18,12 +19,3 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 export { auth, db, storage };
-
-
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
-const firestoreNamespace = firebase.firestore
-
-export {firebase, firestoreNamespace};

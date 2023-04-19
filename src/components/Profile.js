@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from '../firebase';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { collection } from "firebase/firestore";
+import { doc } from "firebase/firestore"; 
+import { getStorage, ref } from "firebase/storage";
 
 
 const Profile = () => {
@@ -10,9 +13,11 @@ const Profile = () => {
     username: '',
     file: null,
   });
+  const auth = getAuth();
+
 
   useEffect(() => {
-    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged((user) => {
       if (user) {
         setUser(user);
         fetchProfileInfo(user.uid);
@@ -26,7 +31,7 @@ const Profile = () => {
   }, []);
 
   const fetchProfileInfo = async (uid) => {
-    const docRef = firebase.firestore().collection('users').doc(uid);
+    const docRef = collection('users').doc(uid);
     const doc = await docRef.get();
     if (doc.exists) {
       setInfo(doc.data());
@@ -55,11 +60,11 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const docRef = firebase.firestore().collection('users').doc(user.uid);
+    const docRef = collection('users').doc(user.uid);
     await docRef.set(info);
 
     if (info.file) {
-      const storageRef = firebase.storage().ref('files/' + user.uid);
+      const storageRef = ref('files/' + user.uid);
       const uploadTask = storageRef.put(info.file);
       uploadTask.on(
         'state_changed',

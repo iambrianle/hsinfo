@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
+import { collection } from "firebase/firestore";
 
 
 const Search = () => {
@@ -13,7 +14,7 @@ const Search = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const query = searchTerm.trim().toLowerCase();
-    const usersRef = firebase.firestore().collection('users');
+    const usersRef = collection('users');
 
     const nameResults = await usersRef
       .where('name', '==', query)

@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
-import { auth } from '../firebase';
+import { getAuth } from "firebase/auth";
 
 
 const ChangePassword = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
+  const auth = getAuth();
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setMessage('');
 
     try {
-      const user = firebase.auth().currentUser;
-      const cred = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+      const user = auth.currentUser;
+      const cred = auth.EmailAuthProvider.credential(user.email, currentPassword);
       await user.reauthenticateWithCredential(cred);
       await user.updatePassword(newPassword);
       setMessage('Password changed successfully');
