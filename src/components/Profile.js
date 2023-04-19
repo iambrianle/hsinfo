@@ -3,10 +3,11 @@ import { onAuthStateChanged } from "firebase/auth";
 import { collection } from "firebase/firestore";
 import { ref } from "firebase/storage";
 import { auth } from "../firebase";
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase';
+
 
 
 
@@ -26,29 +27,36 @@ const Profile = () => {
   });
 
 
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setUser(user);
-      fetchProfileInfo(user.uid);
-    } else {
-      setUser(null);
-    }
-    setLoading(false);
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        fetchProfileInfo(user.uid);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
 
-  return () => unsubscribe();
-}, []);
+    return () => unsubscribe();
+  }, []);
 
   const fetchProfileInfo = async (uid) => {
-    const docRef = collection('users').doc(uid);
-    const doc = await docRef.get();
-    if (doc.exists) {
-      setInfo(doc.data());
+    const userRef = doc(db, 'users', uid);
+    const userData = await getDoc(userRef);
+
+    if (userData.exists()) {
+      setInfo(userData.data());
     } else {
       setInfo({
-        name: '',
-        username: '',
+        firstName: "",
+        lastName: "",
+        username: "",
+        age: "",
+        country: "",
+        phoneNumber: "",
+        email: "",
+        bio: "",
         file: null,
       });
     }
@@ -84,13 +92,13 @@ useEffect(() => {
       bio: info.bio,
     };
     await setDoc(userRef, userData);
-  
+
     if (info.file) {
       const storageRef = ref(storage, 'files/' + user.uid);
-  
+
       // Upload the file to Firebase Storage
       await uploadBytes(storageRef, info.file);
-  
+
       // Get the download URL and update the Firestore document
       const fileUrl = await getDownloadURL(storageRef);
       await updateDoc(userRef, { file: fileUrl });

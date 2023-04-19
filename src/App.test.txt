@@ -29,7 +29,6 @@ export default App;
 
 src/firebase.js
 ''''
-
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
@@ -53,12 +52,52 @@ const storage = getStorage(app);
 
 export { auth, db, storage };
 ''''
+src/WithAdmin.js
+''''
+import React, { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { getAuth } from "firebase/auth";
+
+const withAdmin = (WrappedComponent) => {
+  return (props) => {
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const adminUID = "pF0ZQtyt35ZZybtVwpKweyKcHQ63";
+    const auth = getAuth();
+
+    useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user && user.uid === adminUID) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
+    }, [auth]);
+
+    if (loading) {
+      return <p>Loading...</p>;
+    }
+
+    if (isAdmin) {
+      return <WrappedComponent {...props} />;
+    }
+
+    return <p>Access Denied. You must be an admin to view this page.</p>;
+  };
+};
+
+export default withAdmin;
+''''
 
 src/components/ChangePassword.js
 ''''
 import React, { useState } from 'react';
-import { getAuth } from "firebase/auth";
-
+import { getAuth, EmailAuthProvider, signInWithEmailAndPassword, updatePassword } from "firebase/auth";
 
 const ChangePassword = () => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -68,16 +107,15 @@ const ChangePassword = () => {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    setMessage('');
-
+    setMessage("");
+  
     try {
       const user = auth.currentUser;
-      const cred = auth.EmailAuthProvider.credential(user.email, currentPassword);
-      await user.reauthenticateWithCredential(cred);
-      await user.updatePassword(newPassword);
-      setMessage('Password changed successfully');
-      setCurrentPassword('');
-      setNewPassword('');
+      await signInWithEmailAndPassword(auth, user.email, currentPassword);
+      await updatePassword(user, newPassword);
+      setMessage("Password changed successfully");
+      setCurrentPassword("");
+      setNewPassword("");
     } catch (error) {
       setMessage(error.message);
     }
@@ -161,20 +199,33 @@ import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged } from "firebase/auth";
 import { collection } from "firebase/firestore";
 import { ref } from "firebase/storage";
+import { auth } from "../firebase";
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase';
+
+
 
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [info, setInfo] = useState({
-    name: '',
-    username: '',
+    firstName: "",
+    lastName: "",
+    username: "",
+    age: "",
+    country: "",
+    phoneNumber: "",
+    email: "",
+    bio: "",
     file: null,
   });
 
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
         fetchProfileInfo(user.uid);
@@ -188,14 +239,21 @@ const Profile = () => {
   }, []);
 
   const fetchProfileInfo = async (uid) => {
-    const docRef = collection('users').doc(uid);
-    const doc = await docRef.get();
-    if (doc.exists) {
-      setInfo(doc.data());
+    const userRef = doc(db, 'users', uid);
+    const userData = await getDoc(userRef);
+
+    if (userData.exists()) {
+      setInfo(userData.data());
     } else {
       setInfo({
-        name: '',
-        username: '',
+        firstName: "",
+        lastName: "",
+        username: "",
+        age: "",
+        country: "",
+        phoneNumber: "",
+        email: "",
+        bio: "",
         file: null,
       });
     }
@@ -217,22 +275,30 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const docRef = collection('users').doc(user.uid);
-    await docRef.set(info);
+    const userRef = doc(db, 'users', user.uid);
+    const userData = {
+      firstName: info.firstName,
+      lastName: info.lastName,
+      firstNameLowerCase: info.firstName.toLowerCase(),
+      lastNameLowerCase: info.lastName.toLowerCase(),
+      username: info.username,
+      age: info.age,
+      country: info.country,
+      phoneNumber: info.phoneNumber,
+      email: info.email,
+      bio: info.bio,
+    };
+    await setDoc(userRef, userData);
 
     if (info.file) {
-      const storageRef = ref('files/' + user.uid);
-      const uploadTask = storageRef.put(info.file);
-      uploadTask.on(
-        'state_changed',
-        null,
-        (error) => console.error(error),
-        () => {
-          storageRef.getDownloadURL().then(async (url) => {
-            await docRef.update({ file: url });
-          });
-        }
-      );
+      const storageRef = ref(storage, 'files/' + user.uid);
+
+      // Upload the file to Firebase Storage
+      await uploadBytes(storageRef, info.file);
+
+      // Get the download URL and update the Firestore document
+      const fileUrl = await getDownloadURL(storageRef);
+      await updateDoc(userRef, { file: fileUrl });
     }
   };
 
@@ -250,9 +316,16 @@ const Profile = () => {
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          name="name"
-          placeholder="Name"
-          value={info.name}
+          name="firstName"
+          placeholder="First Name"
+          value={info.firstName}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="lastName"
+          placeholder="Last Name"
+          value={info.lastName}
           onChange={handleChange}
         />
         <input
@@ -260,6 +333,40 @@ const Profile = () => {
           name="username"
           placeholder="Username"
           value={info.username}
+          onChange={handleChange}
+        />
+        <input
+          type="number"
+          name="age"
+          placeholder="Age"
+          value={info.age}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="country"
+          placeholder="Country"
+          value={info.country}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="phoneNumber"
+          placeholder="Phone Number"
+          value={info.phoneNumber}
+          onChange={handleChange}
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={info.email}
+          onChange={handleChange}
+        />
+        <textarea
+          name="bio"
+          placeholder="Bio"
+          value={info.bio}
           onChange={handleChange}
         />
         <input type="file" onChange={handleFileChange} />
@@ -276,6 +383,7 @@ src/components/Register.js
 import React, { useState } from 'react';
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import withAdmin from "../WithAdmin";
 
 
 const Register = () => {
@@ -297,7 +405,7 @@ const Register = () => {
 
   return (
     <div>
-      <h1>Register</h1>
+      <h1>Admin Add Account</h1>
       {error && <p>{error}</p>}
       <form onSubmit={handleRegister}>
         <input
@@ -318,12 +426,14 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default withAdmin(Register);
 ''''
 src/components/Search.js
 ''''
 import React, { useState } from 'react';
 import { collection } from "firebase/firestore";
+import { query, where, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 
 
 const Search = () => {
@@ -336,20 +446,25 @@ const Search = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const query = searchTerm.trim().toLowerCase();
-    const usersRef = collection('users');
-
-    const nameResults = await usersRef
-      .where('name', '==', query)
-      .get();
-    const usernameResults = await usersRef
-      .where('username', '==', query)
-      .get();
-
-    const results = [...nameResults.docs, ...usernameResults.docs].map(doc => {
+    const queryText = searchTerm.trim();
+    const usersRef = collection(db, 'users');
+  
+    const firstNameQuery = query(usersRef, where('firstNameLowerCase', '==', queryText.toLowerCase()));
+    const lastNameQuery = query(usersRef, where('lastNameLowerCase', '==', queryText.toLowerCase()));
+    const usernameQuery = query(usersRef, where('username', '==', queryText.toLowerCase()));
+  
+    const firstNameResults = await getDocs(firstNameQuery);
+    const lastNameResults = await getDocs(lastNameQuery);
+    const usernameResults = await getDocs(usernameQuery);
+  
+    const results = [
+      ...firstNameResults.docs,
+      ...lastNameResults.docs,
+      ...usernameResults.docs,
+    ].map((doc) => {
       return { id: doc.id, ...doc.data() };
     });
-
+  
     setSearchResults(results);
   };
 
@@ -371,12 +486,21 @@ const Search = () => {
           <ul>
             {searchResults.map((result) => (
               <li key={result.id}>
-                <h3>{result.name}</h3>
+                <h3>{result.firstName} {result.lastName}</h3>
                 <p>Username: {result.username}</p>
+                <p>Age: {result.age}</p>
+                <p>Country: {result.country}</p>
+                <p>Phone Number: {result.phoneNumber}</p>
+                <p>Email: {result.email}</p>
+                <p>Bio: {result.bio}</p>
                 {result.file && (
                   <p>
                     File:{' '}
-                    <a href={result.file} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={result.file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Download
                     </a>
                   </p>
@@ -392,3 +516,4 @@ const Search = () => {
 
 export default Search;
 ''''
+

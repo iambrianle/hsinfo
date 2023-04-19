@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import withAdmin from "../WithAdmin";
 
 
 const Register = () => {
@@ -22,7 +23,7 @@ const Register = () => {
 
   return (
     <div>
-      <h1>Register</h1>
+      <h1>Admin Add Account</h1>
       {error && <p>{error}</p>}
       <form onSubmit={handleRegister}>
         <input
@@ -43,4 +44,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default withAdmin(Register);
