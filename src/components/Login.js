@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -13,15 +17,16 @@ const Login = () => {
       await signInWithEmailAndPassword(auth, email, password)
       setEmail('');
       setPassword('');
+      navigate('/dashboard');
     } catch (error) {
       setError(error.message);
     }
   };
 
   return (
-    <div>
+    <div className="login-container">
       <h1>Login</h1>
-      {error && <p>{error}</p>}
+      {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleLogin}>
         <input
           type="email"
