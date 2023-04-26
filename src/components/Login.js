@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
-import './Login.css';
+import './login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,10 +14,15 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
       setEmail('');
       setPassword('');
-      navigate('/dashboard');
+      if (user.uid === 'hAf3x999JMQnHDN93VL8hUf32g02') {
+        navigate('/admin');
+      } else {
+        navigate('/home');
+      }
     } catch (error) {
       setError(error.message);
     }

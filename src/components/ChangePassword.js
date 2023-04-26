@@ -9,17 +9,17 @@ const ChangePassword = () => {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    setMessage("");
-  
+    setMessage("Changing...");
+
     try {
       const user = auth.currentUser;
       await signInWithEmailAndPassword(auth, user.email, currentPassword);
       await updatePassword(user, newPassword);
-      setMessage("Password changed successfully");
+      setMessage("Success");
       setCurrentPassword("");
       setNewPassword("");
     } catch (error) {
-      setMessage(error.message);
+      setMessage(`Failed: ${error.message}`);
     }
   };
 

@@ -7,7 +7,7 @@ const withAdmin = (WrappedComponent) => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const adminUID = "pF0ZQtyt35ZZybtVwpKweyKcHQ63";
+    const adminUID = "hAf3x999JMQnHDN93VL8hUf32g02";
     const auth = getAuth();
 
     useEffect(() => {
@@ -31,7 +31,8 @@ const withAdmin = (WrappedComponent) => {
       return <WrappedComponent {...props} />;
     }
 
-    return <p>Access Denied. You must be an admin to view this page.</p>;
+    return <p>Access Denied. You must be an admin to view this page, Click <a href="https://hsinfohs.web.app/home">here</a> if you created a new account.
+    </p>;
   };
 };
 

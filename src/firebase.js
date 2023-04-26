@@ -11,7 +11,6 @@ const firebaseConfig = {
   projectId: "hsinfohs",
   storageBucket: "hsinfohs.appspot.com",
   messagingSenderId: "94732520226",
-  appId: "1:94732520226:web:6ffda594e09049de12337b"
 };
 
 
