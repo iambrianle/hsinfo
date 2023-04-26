@@ -3,7 +3,7 @@ src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Register from './components/Register';
-
+import Dashboard from './components/dashboard';
 import Login from './components/Login';
 import Profile from './components/Profile';
 import Search from './components/Search';
@@ -14,21 +14,24 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/Admin" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/search" element={<Search />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );
 };
 
 export default App;
+
 '''
 
 src/firebase.js
 ''''
+
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
@@ -41,7 +44,6 @@ const firebaseConfig = {
   projectId: "hsinfohs",
   storageBucket: "hsinfohs.appspot.com",
   messagingSenderId: "94732520226",
-  appId: "1:94732520226:web:6ffda594e09049de12337b"
 };
 
 
@@ -51,47 +53,6 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 
 export { auth, db, storage };
-''''
-src/WithAdmin.js
-''''
-import React, { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { getAuth } from "firebase/auth";
-
-const withAdmin = (WrappedComponent) => {
-  return (props) => {
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [loading, setLoading] = useState(true);
-
-    const adminUID = "pF0ZQtyt35ZZybtVwpKweyKcHQ63";
-    const auth = getAuth();
-
-    useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user && user.uid === adminUID) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
-        setLoading(false);
-      });
-
-      return () => unsubscribe();
-    }, [auth]);
-
-    if (loading) {
-      return <p>Loading...</p>;
-    }
-
-    if (isAdmin) {
-      return <WrappedComponent {...props} />;
-    }
-
-    return <p>Access Denied. You must be an admin to view this page.</p>;
-  };
-};
-
-export default withAdmin;
 ''''
 
 src/components/ChangePassword.js
@@ -151,11 +112,15 @@ src/components/Login.js
 import React, { useState } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from 'react-router-dom';
+import './login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -163,15 +128,16 @@ const Login = () => {
       await signInWithEmailAndPassword(auth, email, password)
       setEmail('');
       setPassword('');
+      navigate('/dashboard');
     } catch (error) {
       setError(error.message);
     }
   };
 
   return (
-    <div>
+    <div className="login-container">
       <h1>Login</h1>
-      {error && <p>{error}</p>}
+      {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleLogin}>
         <input
           type="email"
@@ -192,6 +158,7 @@ const Login = () => {
 };
 
 export default Login;
+
 ''''
 src/components/Profile
 ''''
@@ -427,6 +394,7 @@ const Register = () => {
 };
 
 export default withAdmin(Register);
+
 ''''
 src/components/Search.js
 ''''
@@ -515,5 +483,71 @@ const Search = () => {
 };
 
 export default Search;
+''''
+
+src/components/dashboard.js
+''''
+import React, { useEffect } from 'react';
+import { auth } from '../firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import ChangePassword from './ChangePassword';
+import Profile from './Profile';
+import Search from './Search';
+import './dashboard.css';
+import { useNavigate } from 'react-router-dom';
+
+const Dashboard = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate('/login');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  return (
+    <div className="dashboard-container">
+      <h1>Dashboard</h1>
+      
+
+      <div className="component-container">
+
+        <Profile />
+      </div>
+
+      <div className="component-container">
+
+        <Search />
+      </div>
+
+      <div className="component-container">
+
+        <ChangePassword />
+      </div>
+      <button className="logout-button" onClick={handleLogout}>
+        Logout
+      </button>
+      <div className="component-container">
+
+        <p>Created by Brian using React, Firebase, and Tailwind CSS</p>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
 ''''
 
