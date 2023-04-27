@@ -35,28 +35,25 @@ const Home = () => {
   };
 
   if (!user) {
-    return <p>Loading...</p>
+    return <p>Đang load... nếu quá lâu, click vào <a href="https://hsinfohs.web.app/login">đây</a> để đăng nhập lại</p>
   }
 
 
   return (
     <div>
-      <h1>Welcome, {user.email}</h1>
+      <h1>Xin Chào, {user.email}</h1>
       <div>
         <Link to="/search">
-          <button>Search</button>
+          <button>Tìm Kiếm Dữ Liệu</button>
         </Link>
-        <Link to="/profile">
-          <button>Profile</button>
+        <Link to="/queries">
+          <button>Tạo Dữ Liệu/ Dữ Liệu của tôi</button>
         </Link>
         <Link to="/change-password">
-          <button>Change Password</button>
+          <button>Đổi Mật Khẩu</button>
         </Link>
-        <button onClick={handleLogout}>Logout</button>
+        <button onClick={handleLogout}>Đăng Xuất</button>
       </div>
-      <p>Phiên bản thử nghiệm 0.65, các tính đều hoạt động.</p>
-      <p>- Lỗi 1: Còn một số chỗ chưa việt hóa</p>
-      <p>- Lỗi 2: Trạng thái tải tải lên chưa hoạt động</p>
     </div>
   );
 };

@@ -121,12 +121,12 @@ const Profile = () => {
   }
 
   if (!user) {
-    return <p>Please log in to view your profile.</p>;
+    return <p>Bạn phải đăng nhập để xem trang này.</p>;
   }
 
   return (
     <div>
-      <h1>Profile</h1>
+      <h1>Dữ Liệu</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -204,15 +204,15 @@ const Profile = () => {
         <input type="file" onChange={handleFileChange} />
         <button type="submit">Save</button>
       </form>
-      <h2>Your Queries:</h2>
+      <h2>Dữ liệu của tôi:</h2>
       <ul>
         {queries.map((query) => (
           <li key={query.id}>
             {query.field1}, {query.field2}, {query.field3}, {query.field4}, {query.field5}, {query.field6}, {query.field7}, {query.dropdown1}, {query.dropdown2}, {query.file}
             <a href={query.file}>
-              <button>View file</button>
+              <button>Xem file</button>
             </a>
-            <button onClick={() => handleDelete(query.id)}>Delete</button>
+            <button onClick={() => handleDelete(query.id)}>Xóa dữ liệu!</button>
           </li>
         ))}
       </ul>

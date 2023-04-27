@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Register from './components/Admin';
 import Home from './components/home';
 import Login from './components/Login';
-import Profile from './components/Profile';
+import Queries from './components/Queries';
 import Search from './components/Search';
 import ChangePassword from './components/ChangePassword';
 import CreateAcc from './components/CreateAcc';
@@ -17,7 +17,7 @@ const App = () => {
         <Route path="/Admin" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/queries" element={<Queries />} />
         <Route path="/search" element={<Search />} />
         <Route path="/change-password" element={<ChangePassword />} />
       </Routes>

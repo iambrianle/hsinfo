@@ -31,7 +31,7 @@ const withAdmin = (WrappedComponent) => {
       return <WrappedComponent {...props} />;
     }
 
-    return <p>Access Denied. You must be an admin to view this page, Click <a href="https://hsinfohs.web.app/home">here</a> if you created a new account.
+    return <p>Truy cập bị từ chối. Bạn phải là quản trị viên để xem trang này. Nhấp <a href="https://hsinfohs.web.app/home">vào đây</a> nếu bạn đã tạo một tài khoản mới.
     </p>;
   };
 };

@@ -37,7 +37,7 @@ const Search = () => {
           if (!value) return true;
           return (
             doc[key] &&
-            doc[key].toString().toLowerCase() === value.toString().toLowerCase()
+            doc[key].toString().toLowerCase().includes(value.toString().toLowerCase())
           );
         });
       });
@@ -49,7 +49,7 @@ const Search = () => {
     <div>
       <h1>Search</h1>
       <form onSubmit={handleSubmit}>
-        <input
+      <input
           type="text"
           name="field1"
           placeholder="Thuộc Tính Văn Bản"
