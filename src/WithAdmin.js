@@ -31,7 +31,7 @@ const withAdmin = (WrappedComponent) => {
       return <WrappedComponent {...props} />;
     }
 
-    return <p>Truy cập bị từ chối. Bạn phải là quản trị viên để xem trang này. Nhấp <a href="https://hsinfohs.web.app/home">vào đây</a> nếu bạn đã tạo một tài khoản mới.
+    return <p>Truy cập bị từ chối. Bạn phải là quản trị viên để xem trang. Nhấp <a href="https://hsinfohs.web.app/home">vào đây</a> nếu bạn đã tạo một tài khoản mới.
     </p>;
   };
 };
