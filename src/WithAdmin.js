@@ -7,7 +7,7 @@ const withAdmin = (WrappedComponent) => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const adminUID = "hAf3x999JMQnHDN93VL8hUf32g02";
+    const adminUID = "dikT4YxrkkUqaZVXSKYjQXo2X6h2";
     const auth = getAuth();
 
     useEffect(() => {
